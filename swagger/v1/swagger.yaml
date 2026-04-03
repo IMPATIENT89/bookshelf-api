@@ -1,0 +1,224 @@
+---
+openapi: 3.0.1
+info:
+  title: BookShelf API
+  version: v1
+  description: Personal library management API
+paths:
+  "/api/authors":
+    get:
+      summary: Lists authors
+      tags:
+      - Authors
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: sort_order
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: returns empty data when no authors exist
+    post:
+      summary: Creates an author
+      tags:
+      - Authors
+      parameters: []
+      responses:
+        '201':
+          description: creates an author
+        '422':
+          description: rejects death_year before birth_year
+        '400':
+          description: rejects non-JSON Content-Type
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/author_input"
+  "/api/authors/{id}":
+    get:
+      summary: Retrieves an author
+      tags:
+      - Authors
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: returns the author
+        '404':
+          description: author not found
+    put:
+      summary: Updates an author
+      tags:
+      - Authors
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: updates with partial params
+        '422':
+          description: rejects invalid update
+        '404':
+          description: author not found
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/author_input"
+    delete:
+      summary: Deletes an author
+      tags:
+      - Authors
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: deletes the author
+        '404':
+          description: author not found
+        '409':
+          description: author has books
+  "/api/authors/{id}/books":
+    get:
+      summary: Lists books by author
+      tags:
+      - Authors
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: returns books for the author
+        '404':
+          description: author not found
+servers:
+- url: http://localhost:3000
+  description: Development server
+components:
+  schemas:
+    author_input:
+      type: object
+      properties:
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        bio:
+          type: string
+          maxLength: 2000
+          nullable: true
+        birth_year:
+          type: integer
+          nullable: true
+        death_year:
+          type: integer
+          nullable: true
+        website:
+          type: string
+          nullable: true
+      required:
+      - first_name
+      - last_name
+    author_response:
+      type: object
+      properties:
+        id:
+          type: integer
+        first_name:
+          type: string
+        last_name:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        birth_year:
+          type: integer
+          nullable: true
+        death_year:
+          type: integer
+          nullable: true
+        website:
+          type: string
+          nullable: true
+        book_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    pagination_meta:
+      type: object
+      properties:
+        page:
+          type: integer
+        per_page:
+          type: integer
+        total_items:
+          type: integer
+        total_pages:
+          type: integer
+    error_response:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+              nullable: true
